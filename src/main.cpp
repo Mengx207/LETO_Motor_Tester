@@ -6,12 +6,15 @@
 #include <avr/io.h>
 #include <Wire.h>
 
+#define targetSpeed 158
 LETO_BLDC_Motor vAxialMotor;
 LETO_BLDC_Motor hAxialMotor;
 
-char receivedSerialCMD[10];
 uint8_t serialBitCounter = 0;
+u_int16_t ScanStartPos_H = 6000;
+u_int16_t ScanStartPos_V = 3000;
 bool TestButton = false;
+char receivedSerialCMD[10];
 
 void CheckPID();
 void CheckEndStop();
@@ -19,6 +22,7 @@ void CheckTemp();
 void CheckProtection();
 void MotorInitial();
 void processSerialCMD();
+void IsMotorMoving();
 
 void setup()
 {
@@ -29,8 +33,20 @@ void setup()
   vAxialMotor.name[0] = 'V';
   hAxialMotor.begin();
   MotorInitial();
+  Serial.printf("Moving to start position V: %d, H: %d\r\n", ScanStartPos_V, ScanStartPos_H);
+  hAxialMotor.gotoAbsoluteLocationAtSpeed(ScanStartPos_H, 2 * targetSpeed);
+  vAxialMotor.gotoAbsoluteLocationAtSpeed(ScanStartPos_V, 2 * targetSpeed);
+  delay(300);
+  IsMotorMoving();
+  while (vAxialMotor.isMotorMoving() != 0 || hAxialMotor.isMotorMoving() != 0)
+  {
+    delay(1000);
+  }
+  Serial.printf("Encoder Reading: v: %d, h: %d\r\n",
+                vAxialMotor.getEncoderReading(),
+                hAxialMotor.getEncoderReading());
+  Serial.println("Ready for test, send \"$R\" command to start test");
 }
-
 void loop()
 {
   processSerialCMD();
@@ -44,57 +60,26 @@ void loop()
         TestButton = false;
     }
 }
+
 void CheckPID()
 {
     //Check PID
-    if(vAxialMotor.get_P_Gain() == 2400)
+    if(vAxialMotor.get_P_Gain() == 2400 && vAxialMotor.get_I_Gain() == 0 && vAxialMotor.get_D_Gain() == 2000)
     {
-        Serial.println("vP is checked");
+        Serial.println("V motor PID are checked");
     }
     else
     {
-        Serial.println("vP error");
-    }
-    if(vAxialMotor.get_I_Gain() == 0)
-    {
-        Serial.println("vI is checked");
-    }
-    else
-    {
-        Serial.println("vI error");
-    }
-    if(vAxialMotor.get_D_Gain() == 2000)
-    {
-        Serial.println("vD is checked");
-    }
-    else
-    {
-        Serial.println("vD error");
+        Serial.printf("V motor PID error: %d, %d, %d\r\n", vAxialMotor.get_P_Gain(),vAxialMotor.get_I_Gain(),vAxialMotor.get_D_Gain());
     }
 
-    if(hAxialMotor.get_P_Gain() == 1200)
+    if(hAxialMotor.get_P_Gain() == 1200 && hAxialMotor.get_I_Gain() == 0 && hAxialMotor.get_D_Gain() == 1900)
     {
-        Serial.println("hP is checked");
+        Serial.println("H motor PID are checked");
     }
     else
     {
-        Serial.println("hP error");
-    }
-    if(hAxialMotor.get_I_Gain() == 0)
-    {
-        Serial.println("hI is checked");
-    }
-    else
-    {
-        Serial.println("vI error");
-    }
-    if(hAxialMotor.get_D_Gain() == 1900)
-    {
-        Serial.println("vD is checked");
-    }
-    else
-    {
-        Serial.println("vD error");
+        Serial.printf("H motor PID error: %d, %d, %d\r\n", hAxialMotor.get_P_Gain(),hAxialMotor.get_I_Gain(),hAxialMotor.get_D_Gain());
     }
 }
 void CheckEndStop()
@@ -102,39 +87,39 @@ void CheckEndStop()
     //Check End Stop
     if(vAxialMotor.getFirstEndstop() == 100)
     {
-        Serial.println("vEndstop is checked");
+        Serial.println("V Endstop is checked");
     }
     else
     {
-        Serial.println("vEndstop error");
+        Serial.printf("V Endstop error: %d\r\n", vAxialMotor.getFirstEndstop());
     }
     if(hAxialMotor.getFirstEndstop() == 100)
     {
-        Serial.println("hEndstop is checked");
+        Serial.println("H Endstop is checked");
     }
     else
     {
-        Serial.println("hEndstop error");
+        Serial.printf("H Endstop error: %d\r\n", hAxialMotor.getFirstEndstop());
     }
 }
 void CheckTemp()
 {
     if(vAxialMotor.getTemperature()<50)
     {
-        Serial.println("vTemperature is checked");
+        Serial.println("V Temperature is checked");
     }
     else
     {
-        Serial.println("vOver temperature.");
+        Serial.printf("V Over temperature: %d\n\r", vAxialMotor.getTemperature());
     }
 
     if(hAxialMotor.getTemperature()<50)
     {
-        Serial.println("hTemperature is checked");
+        Serial.println("H Temperature is checked");
     }
     else
     {
-        Serial.println("hOver temperature.");
+        Serial.printf("H Over temperature: %d\n\r", hAxialMotor.getTemperature());
     }    
 }
 void CheckProtection()
@@ -142,17 +127,32 @@ void CheckProtection()
   vAxialMotor.getTempProtection();
   hAxialMotor.getTempProtection();  
 }
+void IsMotorMoving()
+{
+    if(hAxialMotor.isMotorMoving() == 0)
+    {
+        Serial.println("H Motor is not moving.");
+    }
+    else if(vAxialMotor.isMotorMoving() == 0)
+    {
+        Serial.println("V Motor is not moving.");
+    }
+    else
+    {
+        Serial.println("Motors move properly.");
+    }
+}
 void MotorInitial()
 {
   delay(5000);
-  Serial.println("Initializing motors");
+  Serial.println("Initializing motors:");
   vAxialMotor.set_P_Gain(2400);
   vAxialMotor.set_I_Gain(0);
   vAxialMotor.set_D_Gain(2000);
   Serial.printf("V motor PID: %d, %d, %d\r\n", vAxialMotor.get_P_Gain(),vAxialMotor.get_I_Gain(),vAxialMotor.get_D_Gain());
   
   vAxialMotor.setFirstEndstop(100);
-  vAxialMotor.getFirstEndstop();
+  Serial.printf("V motor endstop: %d\r\n",vAxialMotor.getFirstEndstop());
   vAxialMotor.setMechanicalRange(5100);
   vAxialMotor.getMechanicalRange();
   vAxialMotor.setSleepOnPowerUpMode(false);
@@ -166,15 +166,23 @@ void MotorInitial()
   hAxialMotor.set_D_Gain(1900);
   Serial.printf("H motor PID: %d, %d, %d\r\n", hAxialMotor.get_P_Gain(),hAxialMotor.get_I_Gain(),hAxialMotor.get_D_Gain());
   hAxialMotor.setFirstEndstop(100);
-  hAxialMotor.getFirstEndstop();
+  Serial.printf("H motor endstop: %d\r\n",hAxialMotor.getFirstEndstop());
   hAxialMotor.setMechanicalRange(7500);
   hAxialMotor.getMechanicalRange();
   hAxialMotor.setSleepOnPowerUpMode(false);
   hAxialMotor.setTempProtection(true);
   //hAxialMotor.saveSettingsToFlash();
   //hAxialMotor.resetMotor();
+  bool waitHoming = false;
+  while (!waitHoming)
+  {
+    waitHoming = vAxialMotor.finishedHoming() && hAxialMotor.finishedHoming();
+    delay(100);
+    // Serial.printf("v: %d, h: %d\r\n", vAxialMotor.getEncoderReading(),
+    //               hAxialMotor.getEncoderReading());
+  }
   delay(2000);
-  Serial.println("Initialization finished");
+  Serial.println("Initializatio is finished.");
 
 }
 void processSerialCMD()

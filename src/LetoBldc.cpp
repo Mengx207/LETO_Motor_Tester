@@ -464,7 +464,7 @@ uint16_t LETO_BLDC_Motor::getFirstEndstop()
 {
   TitanRead(CMD_getFirstEndstopDistance, 2);
   uint16_t tempFirstStopData = rx_data[0] * 256 + rx_data[1];
-  Serial.printf("%c First endstop: %d\r\n", name[0], tempFirstStopData);
+  //Serial.printf("%c First endstop: %d\r\n", name[0], tempFirstStopData);
   return (tempFirstStopData);
 }
 
