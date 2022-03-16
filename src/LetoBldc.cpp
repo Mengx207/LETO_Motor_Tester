@@ -22,16 +22,16 @@ bool LETO_BLDC_Motor::finishedHoming()
   TitanRead(CMD_calibrationComplete, 1);
   if (rx_data[0] == 1)
   {
-    // Serial.printf("%c Homing Completed\r\n", name[0]);
+     Serial.printf("Homing Completed\r\n");
     return true;
   }
   else if (rx_data[0] == 2)
   {
-    Serial.printf("%c Homing failed\r\n", name[0]);
+    Serial.printf("Homing failed\r\n");
   }
   else
   {
-    // Serial.printf("%c Homing status %d\r\n", name[0], rx_data[0]);
+    //Serial.printf("%c Homing status %d\r\n", name[0], rx_data[0]);
   }
   return false;
   delay(100);
@@ -516,7 +516,7 @@ uint16_t LETO_BLDC_Motor::getMechanicalRange()
 {
   TitanRead(CMD_getMechMotorRange, 2);
   uint16_t tempFirstStopData = rx_data[0] * 256 + rx_data[1];
-  Serial.printf("%c Motor MechanicalRange: %d\r\n", name[0], tempFirstStopData);
+  //Serial.printf("%c Motor MechanicalRange: %d\r\n", name[0], tempFirstStopData);
   return (tempFirstStopData);
 }
 
@@ -542,7 +542,7 @@ void LETO_BLDC_Motor::stopMotor()
 uint8_t LETO_BLDC_Motor::getTempProtection()
 {
   TitanRead(CMD_getOverTempProtectioni, 1);
-  Serial.printf("%c Motor over temperature proctection is: %s\r\n", name[0], rx_data[0] == 0 ? "OFF" : "ON");
+  Serial.printf("Motor over temperature proctection is: %s\r\n", rx_data[0] == 0 ? "OFF" : "ON");
   return (rx_data[0]);
 }
 
