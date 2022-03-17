@@ -48,7 +48,7 @@ void loop()
 {
   if(NewMotor == true)
   {
-    Motor.I2C_addr = 0x52 >> 1;
+    Motor.I2C_addr = 0x29;
     Motor.begin();
     MotorInitial();
     Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
@@ -92,6 +92,8 @@ void loop()
     }
     Motor.saveSettingsToFlash();
     Serial.printf("Write Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
+    delay(3000);
+    Motor.stopMotor();
     WriteData = false;
   }
 }
@@ -131,7 +133,7 @@ bool CheckTemp()
     }
     else
     {
-        Serial.printf("Over temperature: %d\n\r", Motor.getTemperature());
+        Serial.printf("Over temperature: %d\r\n", Motor.getTemperature());
         return false;
     }
    
