@@ -13,6 +13,7 @@ u_int16_t TargetLocation_1= 3000;
 u_int16_t TargetLocation_2= 6000;
 bool TestButton = false;
 bool NewMotor = true;
+bool WriteData = false;
 char receivedSerialCMD[10];
 
 bool CheckPID();
@@ -63,7 +64,7 @@ void loop()
   }
 
   processSerialCMD();
-  if (TestButton == true)
+  if(TestButton == true)
   {
     Serial.println("Motor check and test:");
     if(PowerOnSleep()&&IsMotorMoving()&&CheckPID()&&MechRange()&&CheckTemp()&&CheckProtection())
@@ -75,6 +76,10 @@ void loop()
       Serial.println("Something is wrong with Motor.");
     }
     TestButton = false;
+  }
+  if(WriteData)
+  {
+    Motor.writeRecommendPID_Data(1);
   }
 }
 
