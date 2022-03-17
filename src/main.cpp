@@ -7,7 +7,7 @@
 #include <Wire.h>
 
 #define targetSpeed 158
-LETO_BLDC_Motor vAxialMotor;
+LETO_BLDC_Motor Motor;
 //LETO_BLDC_Motor hAxialMotor;
 
 uint8_t serialBitCounter = 0;
@@ -32,18 +32,18 @@ void setup()
 {
   Serial.begin(115200);
   //hAxialMotor.I2C_addr = 0x50 >> 1;
-  vAxialMotor.I2C_addr = 0x52 >> 1;
-  vAxialMotor.begin();
+  Motor.I2C_addr = 0x52 >> 1;
+  Motor.begin();
   MotorInitial();
   Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
-  vAxialMotor.gotoAbsoluteLocationAtSpeed(TargetLocation_1, 2 * targetSpeed);
+  Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_1, 2 * targetSpeed);
   delay(200);
-  while (vAxialMotor.isMotorMoving() != 0)
+  while (Motor.isMotorMoving() != 0)
   {
     delay(1000);
   }
   Serial.printf("Encoder Reading: v: %d\r\n",
-                vAxialMotor.getEncoderReading());
+                Motor.getEncoderReading());
   Serial.println("Ready for test, send \"$R\" command to start test");
 }
 void loop()
@@ -67,47 +67,47 @@ void loop()
 bool CheckPID()
 {
     //Check PID
-    if(vAxialMotor.get_P_Gain() == 1019 && vAxialMotor.get_I_Gain() == 5 && vAxialMotor.get_D_Gain() == 1024)
+    if(Motor.get_P_Gain() == 1019 && Motor.get_I_Gain() == 5 && Motor.get_D_Gain() == 1024)
     {
         Serial.println("Motor PID is checked");
         return true;
     }
     else
     {
-        Serial.printf("Motor PID error: %d, %d, %d\r\n", vAxialMotor.get_P_Gain(),vAxialMotor.get_I_Gain(),vAxialMotor.get_D_Gain());
+        Serial.printf("Motor PID error: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
         return false;
     }
 }
 bool CheckEndStop()
 {
-    if(vAxialMotor.getFirstEndstop() == 100)
+    if(Motor.getFirstEndstop() == 100)
     {
         Serial.println("Endstop is checked");
         return true;
     }
     else
     {
-        Serial.printf("Endstop error: %d\r\n", vAxialMotor.getFirstEndstop());
+        Serial.printf("Endstop error: %d\r\n", Motor.getFirstEndstop());
         return false;
     }
 }
 bool CheckTemp()
 {
-    if(vAxialMotor.getTemperature()<50)
+    if(Motor.getTemperature()<50)
     {
         Serial.println("Temperature is checked");
         return true;
     }
     else
     {
-        Serial.printf("Over temperature: %d\n\r", vAxialMotor.getTemperature());
+        Serial.printf("Over temperature: %d\n\r", Motor.getTemperature());
         return false;
     }
    
 }
 bool CheckProtection()
 {
-  if(vAxialMotor.getTempProtection() == 0)
+  if(Motor.getTempProtection() == 0)
   {
     return false;
   }
@@ -119,7 +119,7 @@ bool CheckProtection()
 }
 bool IsMotorMoving()
 {   
-    vAxialMotor.gotoAbsoluteLocationAtSpeed(TargetLocation_2, 2 * targetSpeed);
+    Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_2, 2 * targetSpeed);
     if(TargetLocation_2 < 5000)
     {
       TargetLocation_2 = TargetLocation_2 + 1000;
@@ -129,7 +129,7 @@ bool IsMotorMoving()
       TargetLocation_2 = TargetLocation_2 -3000;
     }
     //Serial.printf("TargetLocation: %d\r\n",TargetLocation_2);
-    if(vAxialMotor.isMotorMoving() == 0)
+    if(Motor.isMotorMoving() == 0)
     {
         Serial.println("Motor is not moving.");
         return false;
@@ -142,7 +142,7 @@ bool IsMotorMoving()
 }
 bool PowerOnSleep()
 {
-  if(vAxialMotor.getSleepOnPowerUpMode())
+  if(Motor.getSleepOnPowerUpMode())
   {
     Serial.println("Sleeping error");
     return false;
@@ -155,14 +155,14 @@ bool PowerOnSleep()
 }
 bool MechRange()
 {
-  if(vAxialMotor.getMechanicalRange() == 5100)
+  if(Motor.getMechanicalRange() == 5100)
   {
     Serial.println("Mechanical range is checked");
     return true;
   }
   else
   {
-    Serial.printf("Mechnical range error: %d\r\n", vAxialMotor.getMechanicalRange());
+    Serial.printf("Mechnical range error: %d\r\n", Motor.getMechanicalRange());
     return false;
   }
 }
@@ -170,10 +170,10 @@ void MotorInitial()
 {
   delay(5000);
   Serial.println("Initializing motor:");
-  vAxialMotor.set_P_Gain(1019);
-  vAxialMotor.set_I_Gain(5);
-  vAxialMotor.set_D_Gain(1024);
-  if(vAxialMotor.get_P_Gain() && vAxialMotor.get_I_Gain() && vAxialMotor.get_D_Gain())
+  Motor.set_P_Gain(1019);
+  Motor.set_I_Gain(5);
+  Motor.set_D_Gain(1024);
+  if(Motor.get_P_Gain() && Motor.get_I_Gain() && Motor.get_D_Gain())
   {
     Serial.println("I2C is ON");
   }
@@ -181,21 +181,21 @@ void MotorInitial()
   {
     Serial.println("I2C is OFF");
   }
-  Serial.printf("Motor PID: %d, %d, %d\r\n", vAxialMotor.get_P_Gain(),vAxialMotor.get_I_Gain(),vAxialMotor.get_D_Gain());
+  Serial.printf("Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
   
-  vAxialMotor.setFirstEndstop(100);
-  Serial.printf("Motor endstop: %d\r\n",vAxialMotor.getFirstEndstop());
-  vAxialMotor.setMechanicalRange(5100);
-  vAxialMotor.getMechanicalRange();
-  vAxialMotor.setSleepOnPowerUpMode(false);
-  vAxialMotor.setTempProtection(true);
+  Motor.setFirstEndstop(100);
+  Serial.printf("Motor endstop: %d\r\n",Motor.getFirstEndstop());
+  Motor.setMechanicalRange(5100);
+  Motor.getMechanicalRange();
+  Motor.setSleepOnPowerUpMode(false);
+  Motor.setTempProtection(true);
   delay(2000);
 
 
   bool waitHoming = false;
   while (!waitHoming)
   {
-    waitHoming = vAxialMotor.finishedHoming();
+    waitHoming = Motor.finishedHoming();
     delay(100);
   }
   delay(2000);
