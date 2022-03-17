@@ -8,10 +8,7 @@
 
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
-//LETO_BLDC_Motor hAxialMotor;
-
 uint8_t serialBitCounter = 0;
-//u_int16_t ScanStartPos_H = 6000;
 u_int16_t TargetLocation_1= 3000;
 u_int16_t TargetLocation_2= 6000;
 bool TestButton = false;
@@ -131,7 +128,6 @@ bool CheckProtection()
   {
     return true;
   }
-  //hAxialMotor.getTempProtection();  
 }
 bool IsMotorMoving()
 {   
@@ -144,7 +140,6 @@ bool IsMotorMoving()
     {
       TargetLocation_2 = TargetLocation_2 -3000;
     }
-    //Serial.printf("TargetLocation: %d\r\n",TargetLocation_2);
     if(Motor.isMotorMoving() == 0)
     {
         Serial.println("Motor is not moving.");

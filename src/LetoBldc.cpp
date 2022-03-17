@@ -22,12 +22,12 @@ bool LETO_BLDC_Motor::finishedHoming()
   TitanRead(CMD_calibrationComplete, 1);
   if (rx_data[0] == 1)
   {
-     Serial.printf("Homing Completed\r\n");
+    Serial.printf("Homing Completed\r\n");
     return true;
   }
   else if (rx_data[0] == 2)
   {
-    Serial.printf("Homing failed\r\n");
+    //Serial.printf("Homing failed\r\n");
   }
   else
   {
