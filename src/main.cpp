@@ -15,7 +15,7 @@ uint8_t serialBitCounter = 0;
 u_int16_t TargetLocation_1= 3000;
 u_int16_t TargetLocation_2= 6000;
 bool TestButton = false;
-bool NewMotor = false;
+bool NewMotor = true;
 char receivedSerialCMD[10];
 
 bool CheckPID();
@@ -32,7 +32,7 @@ void setup()
 {
   Serial.begin(115200);
   //hAxialMotor.I2C_addr = 0x50 >> 1;
-  Motor.I2C_addr = 0x52 >> 1;
+  /*Motor.I2C_addr = 0x52 >> 1;
   Motor.begin();
   MotorInitial();
   Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
@@ -44,29 +44,45 @@ void setup()
   }
   Serial.printf("Encoder Reading: v: %d\r\n",
                 Motor.getEncoderReading());
-  Serial.println("Ready for test, send \"$R\" command to start test");
+  Serial.println("Ready for test, send \"$R\" command to start test");*/
 }
 void loop()
 {
-  processSerialCMD();
-    if (TestButton == true)
+  if(NewMotor == true)
+  {
+    Motor.I2C_addr = 0x52 >> 1;
+    Motor.begin();
+    MotorInitial();
+    Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
+    Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_1, 2 * targetSpeed);
+    delay(200);
+    while (Motor.isMotorMoving() != 0)
     {
-      Serial.println("Motor check and test:");
-      if(PowerOnSleep()&&IsMotorMoving()&&CheckPID()&&MechRange()&&CheckTemp()&&CheckProtection())
-      {
-         Serial.println("Motor is ready to assemble.");
-      }
-      else
-      {
-         Serial.println("Something wrong with Motor.");
-      }
-      TestButton = false;
+      delay(1000);
     }
+    Serial.printf("Encoder Reading: v: %d\r\n", Motor.getEncoderReading());
+    Serial.println("Ready for test, send \"$R\" command to start test");
+    NewMotor = false;
+  }
+
+  processSerialCMD();
+  if (TestButton == true)
+  {
+    Serial.println("Motor check and test:");
+    if(PowerOnSleep()&&IsMotorMoving()&&CheckPID()&&MechRange()&&CheckTemp()&&CheckProtection())
+    {
+      Serial.println("Motor is ready to assemble.");
+    }
+    else
+    {
+      Serial.println("Something is wrong with Motor.");
+    }
+    TestButton = false;
+  }
 }
 
 bool CheckPID()
 {
-    //Check PID
     if(Motor.get_P_Gain() == 1019 && Motor.get_I_Gain() == 5 && Motor.get_D_Gain() == 1024)
     {
         Serial.println("Motor PID is checked");
@@ -193,10 +209,15 @@ void MotorInitial()
 
 
   bool waitHoming = false;
+  u_int32_t timer = millis();
   while (!waitHoming)
   {
     waitHoming = Motor.finishedHoming();
     delay(100);
+    if(millis()-timer > 30000)
+    {
+      Serial.println("Homing time out");
+    }
   }
   delay(2000);
   Serial.println("Initialization is finished.");
@@ -226,6 +247,10 @@ void processSerialCMD()
       if (receivedSerialCMD[0] == 'R')
       { 
         TestButton = true; 
+      }
+      if(receivedSerialCMD[0] == 'N')
+      {
+        NewMotor = true;
       }
     }
   }
