@@ -199,8 +199,8 @@ void LETO_BLDC_Motor::resetMotor()
 void LETO_BLDC_Motor::saveSettingsToFlash()
 {
   TitanWrite(CMD_saveSetting2Ash, 0);
-  Serial.printf("%c motor save flash memory\r\n", name[0]);
-  delay(10000);
+  Serial.println("Save to flash memory");
+  delay(5000);
 }
 
 uint8_t LETO_BLDC_Motor::getIsMoving()

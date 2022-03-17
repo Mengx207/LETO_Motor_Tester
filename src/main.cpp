@@ -77,9 +77,22 @@ void loop()
     }
     TestButton = false;
   }
-  if(WriteData)
+  if(WriteData == true)
   {
-    Motor.writeRecommendPID_Data(1);
+    char type[0];
+    if(Motor.I2C_addr == 0x29)
+    {
+      Serial.println("Motor type: V");
+      Motor.writeRecommendPID_Data(1);
+    }
+    if(Motor.I2C_addr == 0x28)
+    {
+      Serial.println("Motor type: H");
+      Motor.writeRecommendPID_Data(0);
+    }
+    Motor.saveSettingsToFlash();
+    Serial.printf("Write Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
+    WriteData = false;
   }
 }
 
@@ -205,7 +218,7 @@ void MotorInitial()
   Motor.getMechanicalRange();
   Motor.setSleepOnPowerUpMode(false);
   Motor.setTempProtection(true);
-  delay(2000);
+  Motor.saveSettingsToFlash();
 
 
   bool waitHoming = false;
@@ -251,6 +264,10 @@ void processSerialCMD()
       if(receivedSerialCMD[0] == 'N')
       {
         NewMotor = true;
+      }
+      if(receivedSerialCMD[0] == 'W')
+      {
+        WriteData = true;
       }
     }
   }
