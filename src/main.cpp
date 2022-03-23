@@ -7,6 +7,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
+
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
 uint8_t serialBitCounter = 0;
