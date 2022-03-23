@@ -6,11 +6,7 @@
 #include <avr/io.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_I2CDevice.h>
 
-Adafruit_SSD1306 display(0x3C);
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
 uint8_t serialBitCounter = 0;
