@@ -51,10 +51,7 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);
-  display.print("Connecting to SSID\n'adafruit':");
-  display.print("connected!");
-  display.println("IP: 10.0.1.23");
-  display.println("Sending val #0");
+  display.println("Welcome!");
   display.setCursor(0,0);
   display.display(); // actually display all of the above
 }
@@ -66,6 +63,7 @@ void loop()
     Motor.begin();
     MotorInitial();
     Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
+    display.printf("Moving to target location: %d\r\n", TargetLocation_1);
     Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_1, 2 * targetSpeed);
     delay(200);
     while (Motor.isMotorMoving() != 0)
@@ -215,18 +213,34 @@ void MotorInitial()
 {
   delay(5000);
   Serial.println("Initializing motor:");
+
+  display.setCursor(0,16);
+  display.println("Initializing motor:");
+  display.setCursor(0,16);
+  display.display();
+
   Motor.set_P_Gain(1019);
-  Motor.set_I_Gain(5);
+  Motor.set_I_Gain(0);
   Motor.set_D_Gain(1024);
   if(Motor.get_P_Gain() && Motor.get_I_Gain() && Motor.get_D_Gain())
   {
+    display.setCursor(0,32);
     Serial.println("I2C is ON");
+    display.println("I2C is ON");
+    display.display();
   }
   else
   {
     Serial.println("I2C is OFF");
+    display.setCursor(0,32);
+    display.println("I2C is OFF");
+    display.display();
   }
   Serial.printf("Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
+  display.setCursor(0,48);
+  display.printf("P/I/D:%d/%d/%d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
+  display.display();
+  display.startscrollright(0x02, 0x07);
   
   Motor.setFirstEndstop(100);
   Serial.printf("Motor endstop: %d\r\n",Motor.getFirstEndstop());
