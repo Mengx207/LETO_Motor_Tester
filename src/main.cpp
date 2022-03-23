@@ -6,7 +6,11 @@
 #include <avr/io.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_I2CDevice.h>
 
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &Wire);
 
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
@@ -31,20 +35,28 @@ void processSerialCMD();
 void setup()
 {
   Serial.begin(115200);
-  //hAxialMotor.I2C_addr = 0x50 >> 1;
-  /*Motor.I2C_addr = 0x52 >> 1;
-  Motor.begin();
-  MotorInitial();
-  Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
-  Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_1, 2 * targetSpeed);
-  delay(200);
-  while (Motor.isMotorMoving() != 0)
-  {
-    delay(1000);
-  }
-  Serial.printf("Encoder Reading: v: %d\r\n",
-                Motor.getEncoderReading());
-  Serial.println("Ready for test, send \"$R\" command to start test");*/
+  Serial.println("OLED FeatherWing test");
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
+  Serial.println("OLED begun");
+  // Show image buffer on the display hardware.
+  // Since the buffer is intialized with an Adafruit splashscreen
+  // internally, this will display the splashscreen.
+  display.display();
+  delay(1000);
+  // Clear the buffer.
+  display.clearDisplay();
+  display.display();
+  Serial.println("IO test");
+  // text display tests
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.print("Connecting to SSID\n'adafruit':");
+  display.print("connected!");
+  display.println("IP: 10.0.1.23");
+  display.println("Sending val #0");
+  display.setCursor(0,0);
+  display.display(); // actually display all of the above
 }
 void loop()
 {
