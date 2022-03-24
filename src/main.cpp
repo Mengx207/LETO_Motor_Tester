@@ -78,6 +78,12 @@ void loop()
     }
     Serial.printf("Encoder Reading: v: %d\r\n", Motor.getEncoderReading());
     Serial.println("Ready for test, send \"$R\" command to start test");
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println("Ready to test:");
+    display.println("press R to run test");
+    display.display();
+
     NewMotor = false;
   }
 
@@ -85,13 +91,22 @@ void loop()
   if(TestButton == true)
   {
     Serial.println("Motor check and test:");
-    if(PowerOnSleep()&&IsMotorMoving()&&CheckPID()&&MechRange()&&CheckTemp()&&CheckProtection())
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println("Motor check and test:");
+    display.display();
+    if(CheckPID()&&PowerOnSleep()&&IsMotorMoving()&&MechRange()&&CheckTemp()&&CheckProtection())
     {
       Serial.println("Motor is ready to assemble.");
+      display.setCursor(0,8);
+      display.println("Ready to assemble.");
+      display.display();
     }
     else
     {
       Serial.println("Something is wrong with Motor.");
+      display.println("Error in Motor!");
+      display.display();
     }
     TestButton = false;
   }
@@ -121,6 +136,9 @@ bool CheckPID()
     if(Motor.get_P_Gain() == 1019 && Motor.get_I_Gain() == 5 && Motor.get_D_Gain() == 1024)
     {
         Serial.println("Motor PID is checked");
+        display.setCursor(0,16);
+        display.println("PID:check");
+        display.display();
         return true;
     }
     else
@@ -134,6 +152,8 @@ bool CheckEndStop()
     if(Motor.getFirstEndstop() == 100)
     {
         Serial.println("Endstop is checked");
+        display.println("Endstop:check");
+        display.display();
         return true;
     }
     else
@@ -147,6 +167,8 @@ bool CheckTemp()
     if(Motor.getTemperature()<50)
     {
         Serial.println("Temperature is checked");
+        display.println("Temperature:check");
+        display.display();
         return true;
     }
     else
@@ -164,6 +186,8 @@ bool CheckProtection()
   }
   else
   {
+    display.println("Temp protection:check");
+    display.display();
     return true;
   }
 }
@@ -186,6 +210,8 @@ bool IsMotorMoving()
     else
     {
         Serial.println("Motor's move is checked");
+        display.println("Movement:check");
+        display.display();
         return true;
     }
 }
@@ -199,6 +225,8 @@ bool PowerOnSleep()
   else
   {
     Serial.println("Power on sleep is checked");
+    display.println("Sleepmode:check");
+    display.display();
     return true;
   }
 }
@@ -207,6 +235,8 @@ bool MechRange()
   if(Motor.getMechanicalRange() == 5100)
   {
     Serial.println("Mechanical range is checked");
+    display.println("Mech range:check");
+    display.display();
     return true;
   }
   else
@@ -229,7 +259,7 @@ void MotorInitial()
   delay(1000);
 
   Motor.set_P_Gain(1019);
-  Motor.set_I_Gain(0);
+  Motor.set_I_Gain(5);
   Motor.set_D_Gain(1024);
   if(Motor.get_P_Gain() && Motor.get_D_Gain())
   {
@@ -287,11 +317,6 @@ void MotorInitial()
   }
   delay(3000);
   Serial.println("Initialization is finished.");
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.println("Ready to test:");
-  display.display();
-
 }
 void processSerialCMD()
 {
