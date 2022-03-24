@@ -35,9 +35,7 @@ void processSerialCMD();
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("OLED FeatherWing test");
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
-  Serial.println("OLED begun");
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
@@ -48,12 +46,20 @@ void setup()
   display.display();
   Serial.println("IO test");
   // text display tests
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);
   display.println("Welcome!");
-  display.setCursor(0,0);
+  display.setTextSize(1);
+  display.setCursor(0,16);
+  display.println("Test starts soon:");
+  display.setCursor(0,32);
+  display.println("V/H LETO motors");
+  display.setCursor(0,48);
+  display.println("@V@");
+  display.startscrollright(5,6);
   display.display(); // actually display all of the above
+  delay(1000);
 }
 void loop()
 {
@@ -213,18 +219,21 @@ void MotorInitial()
 {
   delay(5000);
   Serial.println("Initializing motor:");
-
-  display.setCursor(0,16);
+  display.clearDisplay();
+  display.stopscroll();
+  display.setCursor(0,0);
   display.println("Initializing motor:");
-  display.setCursor(0,16);
+  display.setCursor(0,8);
+  display.println("(V motor)");
   display.display();
+  delay(1000);
 
   Motor.set_P_Gain(1019);
   Motor.set_I_Gain(0);
   Motor.set_D_Gain(1024);
-  if(Motor.get_P_Gain() && Motor.get_I_Gain() && Motor.get_D_Gain())
+  if(Motor.get_P_Gain() && Motor.get_D_Gain())
   {
-    display.setCursor(0,32);
+    display.setCursor(0,16);
     Serial.println("I2C is ON");
     display.println("I2C is ON");
     display.display();
@@ -232,26 +241,35 @@ void MotorInitial()
   else
   {
     Serial.println("I2C is OFF");
-    display.setCursor(0,32);
+    display.setCursor(0,16);
     display.println("I2C is OFF");
     display.display();
   }
   Serial.printf("Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
-  display.setCursor(0,48);
+  display.setCursor(0,24);
   display.printf("P/I/D:%d/%d/%d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
   display.display();
-  display.startscrollright(0x02, 0x07);
   
   Motor.setFirstEndstop(100);
   Serial.printf("Motor endstop: %d\r\n",Motor.getFirstEndstop());
+  display.setCursor(0,32);
+  display.printf("Endstop: %d\r\n",Motor.getFirstEndstop());
+  display.display();
   Motor.setMechanicalRange(5100);
   Motor.getMechanicalRange();
-  Motor.setSleepOnPowerUpMode(false);
+  display.setCursor(0,40);
+  display.println("Temp protection:on");
+  display.display();
   Motor.setTempProtection(true);
+  Motor.setSleepOnPowerUpMode(false);
   Motor.saveSettingsToFlash();
+  delay(1000);
 
 
   bool waitHoming = false;
+  display.setCursor(0,48);
+  display.println("Wait for homing...");
+  display.display();
   u_int32_t timer = millis();
   while (!waitHoming)
   {
@@ -260,10 +278,19 @@ void MotorInitial()
     if(millis()-timer > 30000)
     {
       Serial.println("Homing time out");
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("Homing time out");
+      display.display();
+
     }
   }
-  delay(2000);
+  delay(3000);
   Serial.println("Initialization is finished.");
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println("Ready to test:");
+  display.display();
 
 }
 void processSerialCMD()
