@@ -46,20 +46,20 @@ void setup()
   display.display();
   Serial.println("IO test");
   // text display tests
-  display.setTextSize(2);
+  display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);
-  display.println("Welcome!");
-  display.setTextSize(1);
+  display.println("Welcome tester!");
   display.setCursor(0,16);
-  display.println("Test starts soon:");
-  display.setCursor(0,32);
-  display.println("V/H LETO motors");
-  display.setCursor(0,48);
-  display.println("@V@");
-  display.startscrollright(5,6);
+  display.println("Motor type:");
+  display.println("LETO BLDC");
+  display.println("OVU00243EndStop");
+  display.println("OVU00244Continuous");
+  display.println("---------------------");
+  display.println("Test starts soon.....");
+  display.startscrollright(7,7);
   display.display(); // actually display all of the above
-  delay(1000);
+  delay(2000);
 }
 void loop()
 {
@@ -90,6 +90,7 @@ void loop()
   processSerialCMD();
   if(TestButton == true)
   {
+    display.stopscroll();
     Serial.println("Motor check and test:");
     display.clearDisplay();
     display.setCursor(0,0);
@@ -99,7 +100,7 @@ void loop()
     {
       Serial.println("Motor is ready to assemble.");
       display.setCursor(0,8);
-      display.println("Ready to assemble.");
+      display.println("Ready to assemble");
       display.display();
     }
     else
@@ -144,6 +145,9 @@ bool CheckPID()
     else
     {
         Serial.printf("Motor PID error: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
+        display.setCursor(0,16);
+        display.println("PID:error");
+        display.display();
         return false;
     }
 }
@@ -159,6 +163,8 @@ bool CheckEndStop()
     else
     {
         Serial.printf("Endstop error: %d\r\n", Motor.getFirstEndstop());
+        display.println("Endstop:error");
+        display.display();
         return false;
     }
 }
@@ -167,13 +173,15 @@ bool CheckTemp()
     if(Motor.getTemperature()<50)
     {
         Serial.println("Temperature is checked");
-        display.println("Temperature:check");
+        display.printf("Temp:check(%dC)\r\n", Motor.getTemperature());
         display.display();
         return true;
     }
     else
     {
         Serial.printf("Over temperature: %d\r\n", Motor.getTemperature());
+        display.printf("Temp:over(%dC)\r\n", Motor.getTemperature());
+        display.display();
         return false;
     }
    
@@ -289,6 +297,7 @@ void MotorInitial()
   Motor.getMechanicalRange();
   display.setCursor(0,40);
   display.println("Temp protection:on");
+  display.println("---------------------");
   display.display();
   Motor.setTempProtection(true);
   Motor.setSleepOnPowerUpMode(false);
@@ -297,8 +306,9 @@ void MotorInitial()
 
 
   bool waitHoming = false;
-  display.setCursor(0,48);
-  display.println("Wait for homing...");
+  display.setCursor(0,56);
+  display.println("Wait for homing......");
+  display.startscrollright(7,7);
   display.display();
   u_int32_t timer = millis();
   while (!waitHoming)
