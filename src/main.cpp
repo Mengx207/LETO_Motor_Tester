@@ -53,8 +53,8 @@ void setup()
   display.setCursor(0,16);
   display.println("Motor type:");
   display.println("LETO BLDC");
-  display.println("OVU00243EndStop");
-  display.println("OVU00244Continuous");
+  display.println("OVU00243 EndStop");
+  display.println("OVU00244 Continuous");
   display.println("---------------------");
   display.println("Test starts soon.....");
   display.startscrollright(7,7);
@@ -94,19 +94,22 @@ void loop()
     Serial.println("Motor check and test:");
     display.clearDisplay();
     display.setCursor(0,0);
-    display.println("Motor check and test:");
+    display.println("Motor Test Result:");
     display.display();
     if(CheckPID()&&PowerOnSleep()&&IsMotorMoving()&&MechRange()&&CheckTemp()&&CheckProtection())
     {
       Serial.println("Motor is ready to assemble.");
       display.setCursor(0,8);
-      display.println("**Ready to Assemble**");
+      display.println("Ready to Assemble  ");
+      display.setCursor(0,56);
+      display.println("..N for new motor...");
+      display.startscrollleft(7,7);
       display.display();
     }
     else
     {
       Serial.println("Something is wrong with Motor.");
-      display.println("|Error in Motor|");
+      display.println("!!Error in Motor!!");
       display.display();
     }
     TestButton = false;
@@ -245,8 +248,8 @@ bool MechRange()
   if(Motor.getMechanicalRange() == 5100)
   {
     Serial.println("Mechanical range is checked");
-    display.println("Mech range:check");
-    display.display();
+    /*display.println("Mech range:check");
+    display.display();*/
     return true;
   }
   else
