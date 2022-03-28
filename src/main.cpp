@@ -11,7 +11,9 @@
 #include <Adafruit_I2CDevice.h>
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &Wire);
-
+#define PB_R_Pin 33
+#define PB_N_Pin 30
+#define DebonceTimer 500
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
 uint8_t serialBitCounter = 0;
@@ -20,7 +22,11 @@ u_int16_t TargetLocation_2= 5000;
 bool TestButton = false;
 bool NewMotor = true;
 bool WriteData = false;
+bool flagPushButtonPushed_R = false;
+bool flagPushButtonPushed_N = true;
 char receivedSerialCMD[10];
+volatile unsigned long pbDebonceTime_R;
+volatile unsigned long pbDebonceTime_N;
 
 bool CheckPID();
 bool CheckEndStop();
@@ -31,6 +37,8 @@ bool IsMotorMoving();
 bool PowerOnSleep();
 void MotorInitial();
 void processSerialCMD();
+void PBCallback_R();
+void PBCallback_N();
 
 void setup()
 {
@@ -60,6 +68,8 @@ void setup()
   display.startscrollright(7,7);
   display.display(); // actually display all of the above
   delay(2000);
+  attachInterrupt(PB_R_Pin, PBCallback_R, FALLING);
+  attachInterrupt(PB_N_Pin, PBCallback_N, FALLING);
 }
 void loop()
 {
@@ -365,5 +375,21 @@ void processSerialCMD()
         WriteData = true;
       }
     }
+  }
+}
+void PBCallback_R()
+{
+  if (flagPushButtonPushed_R == false && pbDebonceTime_R < millis())
+  {
+    flagPushButtonPushed_R = true;
+    pbDebonceTime_R = millis() + DebonceTimer;
+  }
+}
+void PBCallback_N()
+{
+  if (flagPushButtonPushed_N == false && pbDebonceTime_N < millis())
+  {
+    flagPushButtonPushed_N = true;
+    pbDebonceTime_N = millis() + DebonceTimer;
   }
 }
