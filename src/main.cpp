@@ -16,7 +16,7 @@ Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &Wire);
 LETO_BLDC_Motor Motor;
 uint8_t serialBitCounter = 0;
 u_int16_t TargetLocation_1= 3000;
-u_int16_t TargetLocation_2= 6000;
+u_int16_t TargetLocation_2= 5000;
 bool TestButton = false;
 bool NewMotor = true;
 bool WriteData = false;
@@ -81,7 +81,7 @@ void loop()
     display.clearDisplay();
     display.setCursor(0,0);
     display.println("Ready to test:");
-    display.println("press R to run test");
+    display.println("Press R to run test");
     display.display();
 
     NewMotor = false;
@@ -100,13 +100,13 @@ void loop()
     {
       Serial.println("Motor is ready to assemble.");
       display.setCursor(0,8);
-      display.println("Ready to assemble");
+      display.println("**Ready to Assemble**");
       display.display();
     }
     else
     {
       Serial.println("Something is wrong with Motor.");
-      display.println("Error in Motor!");
+      display.println("|Error in Motor|");
       display.display();
     }
     TestButton = false;
@@ -202,17 +202,19 @@ bool CheckProtection()
 bool IsMotorMoving()
 {   
     Motor.gotoAbsoluteLocationAtSpeed(TargetLocation_2, 2 * targetSpeed);
-    if(TargetLocation_2 < 5000)
+    if(TargetLocation_2 >= 5000)
     {
-      TargetLocation_2 = TargetLocation_2 + 1000;
+      TargetLocation_2 = 1000;
     }
     else
     {
-      TargetLocation_2 = TargetLocation_2 -3000;
+      TargetLocation_2 = TargetLocation_2 * 2;
     }
     if(Motor.isMotorMoving() == 0)
     {
         Serial.println("Motor is not moving.");
+        display.println("Movement:error");
+        display.display();
         return false;
     }
     else
@@ -257,8 +259,8 @@ void MotorInitial()
 {
   delay(5000);
   Serial.println("Initializing motor:");
-  display.clearDisplay();
   display.stopscroll();
+  display.clearDisplay();
   display.setCursor(0,0);
   display.println("Initializing motor:");
   display.setCursor(0,8);
@@ -298,6 +300,8 @@ void MotorInitial()
   display.setCursor(0,40);
   display.println("Temp protection:on");
   display.println("---------------------");
+  display.println("Wait for homing......");
+  display.startscrollright(7,7);
   display.display();
   Motor.setTempProtection(true);
   Motor.setSleepOnPowerUpMode(false);
@@ -306,10 +310,6 @@ void MotorInitial()
 
 
   bool waitHoming = false;
-  display.setCursor(0,56);
-  display.println("Wait for homing......");
-  display.startscrollright(7,7);
-  display.display();
   u_int32_t timer = millis();
   while (!waitHoming)
   {
