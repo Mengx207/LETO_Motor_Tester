@@ -11,22 +11,25 @@
 #include <Adafruit_I2CDevice.h>
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 64, &Wire);
-#define PB_R_Pin 33
-#define PB_N_Pin 30
+#define PB_Pin 33
 #define DebonceTimer 500
+#define DebonceTimer_N 4000
 #define targetSpeed 158
 LETO_BLDC_Motor Motor;
 uint8_t serialBitCounter = 0;
 u_int16_t TargetLocation_1= 3000;
 u_int16_t TargetLocation_2= 5000;
-bool TestButton = false;
-bool NewMotor = true;
+//bool TestButton = false;
+//bool NewMotor = true;
 bool WriteData = false;
 bool flagPushButtonPushed_R = false;
 bool flagPushButtonPushed_N = true;
+bool flagPress = false;
 char receivedSerialCMD[10];
-volatile unsigned long pbDebonceTime_R;
+volatile unsigned long pbDebonceTime;
 volatile unsigned long pbDebonceTime_N;
+volatile unsigned long timer;
+int current_state;
 
 bool CheckPID();
 bool CheckEndStop();
@@ -67,13 +70,30 @@ void setup()
   display.println("Test starts soon.....");
   display.startscrollright(7,7);
   display.display(); // actually display all of the above
-  delay(2000);
-  attachInterrupt(PB_R_Pin, PBCallback_R, FALLING);
-  attachInterrupt(PB_N_Pin, PBCallback_N, FALLING);
+  delay(5000);
+  attachInterrupt(PB_Pin, PBCallback_R, FALLING);
 }
 void loop()
 {
-  if(NewMotor == true)
+  //push botton 3s to rerun test
+  current_state = digitalRead(PB_Pin);
+  if(current_state == LOW && flagPress == false)
+  {
+    timer = millis() +3000;
+    flagPress = true;
+  }
+  if(current_state != LOW && flagPress == true)
+  {
+    flagPress = false;
+  }
+  if(current_state == LOW && flagPress == true && timer < millis())
+  {
+    display.clearDisplay();
+    flagPushButtonPushed_N = true;
+    flagPushButtonPushed_R = false;
+  }
+
+  if(flagPushButtonPushed_N == true)
   {
     Motor.I2C_addr = 0x29;
     Motor.begin();
@@ -91,14 +111,14 @@ void loop()
     display.clearDisplay();
     display.setCursor(0,0);
     display.println("Ready to test:");
-    display.println("Press R to run test");
+    display.println("Press button to run.");
     display.display();
-
-    NewMotor = false;
+    flagPushButtonPushed_R = false;
+    flagPushButtonPushed_N = false;
   }
 
-  processSerialCMD();
-  if(TestButton == true)
+  //processSerialCMD();
+  if(flagPushButtonPushed_R == true)
   {
     display.stopscroll();
     Serial.println("Motor check and test:");
@@ -112,7 +132,7 @@ void loop()
       display.setCursor(0,8);
       display.println("Ready to Assemble  ");
       display.setCursor(0,56);
-      display.println("..N for new motor...");
+      display.println("Long press to reset.");
       display.startscrollleft(7,7);
       display.display();
     }
@@ -122,9 +142,16 @@ void loop()
       display.println("!!Error in Motor!!");
       display.display();
     }
-    TestButton = false;
+    flagPushButtonPushed_R = false;
   }
-  if(WriteData == true)
+
+  if (PB_Pin == false && flagPushButtonPushed_N == false && pbDebonceTime_N < millis())
+  {
+    flagPushButtonPushed_N = true;
+    pbDebonceTime_N = millis() + DebonceTimer_N;
+  }
+
+  /*if(WriteData == true)
   {
     char type[0];
     if(Motor.I2C_addr == 0x29)
@@ -142,7 +169,7 @@ void loop()
     delay(3000);
     Motor.stopMotor();
     WriteData = false;
-  }
+  }*/
 }
 
 bool CheckPID()
@@ -270,7 +297,6 @@ bool MechRange()
 }
 void MotorInitial()
 {
-  delay(5000);
   Serial.println("Initializing motor:");
   display.stopscroll();
   display.clearDisplay();
@@ -364,11 +390,11 @@ void processSerialCMD()
       receivedSerialCMD[serialBitCounter] = '\0';
       if (receivedSerialCMD[0] == 'R')
       { 
-        TestButton = true; 
+        flagPushButtonPushed_R = true; 
       }
       if(receivedSerialCMD[0] == 'N')
       {
-        NewMotor = true;
+        flagPushButtonPushed_N = true;
       }
       if(receivedSerialCMD[0] == 'W')
       {
@@ -379,17 +405,9 @@ void processSerialCMD()
 }
 void PBCallback_R()
 {
-  if (flagPushButtonPushed_R == false && pbDebonceTime_R < millis())
+  if (flagPushButtonPushed_R == false && pbDebonceTime < millis())
   {
     flagPushButtonPushed_R = true;
-    pbDebonceTime_R = millis() + DebonceTimer;
-  }
-}
-void PBCallback_N()
-{
-  if (flagPushButtonPushed_N == false && pbDebonceTime_N < millis())
-  {
-    flagPushButtonPushed_N = true;
-    pbDebonceTime_N = millis() + DebonceTimer;
+    pbDebonceTime = millis() + DebonceTimer;
   }
 }
