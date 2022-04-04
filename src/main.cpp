@@ -315,6 +315,8 @@ void MotorInitial()
     display.setCursor(0,16);
     Serial.println("I2C is ON");
     display.println("I2C is ON");
+    display.println("Address is correct");
+
     display.display();
   }
   else
@@ -325,15 +327,15 @@ void MotorInitial()
     display.display();
   }
   Serial.printf("Motor PID: %d, %d, %d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
-  display.setCursor(0,24);
+  //display.setCursor(0,24);
   display.printf("P/I/D:%d/%d/%d\r\n", Motor.get_P_Gain(),Motor.get_I_Gain(),Motor.get_D_Gain());
   display.display();
   
   Motor.setFirstEndstop(100);
   Serial.printf("Motor endstop: %d\r\n",Motor.getFirstEndstop());
-  display.setCursor(0,32);
-  display.printf("Endstop: %d\r\n",Motor.getFirstEndstop());
-  display.display();
+  //display.setCursor(0,32);
+  //display.printf("Endstop: %d\r\n",Motor.getFirstEndstop());
+  //display.display();
   Motor.setMechanicalRange(5100);
   Motor.getMechanicalRange();
   display.setCursor(0,40);
