@@ -61,11 +61,12 @@ void setup()
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);
   display.println("Welcome tester!");
+  display.setCursor(0,8);
+  display.println("Switch on sw1.");
   display.setCursor(0,16);
-  display.println("Motor type:");
-  display.println("LETO BLDC");
-  display.println("OVU00243 EndStop");
-  display.println("OVU00244 Continuous");
+  display.println("LETO BLDC Motor"); 
+  display.println("OVU00243 & OVU00244");
+  display.println("(End Stop&Continuous)");
   display.println("---------------------");
   display.println("Test starts soon.....");
   display.startscrollright(7,7);
@@ -303,7 +304,7 @@ void MotorInitial()
   display.setCursor(0,0);
   display.println("Initializing motor:");
   display.setCursor(0,8);
-  display.println("(V motor)");
+  display.println("(Config with no load)");
   display.display();
   delay(1000);
 
