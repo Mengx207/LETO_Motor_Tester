@@ -65,7 +65,7 @@ void setup()
   display.println("Switch on sw1.");
   display.setCursor(0,16);
   display.println("LETO BLDC Motor"); 
-  display.println("OVU00243 & OVU00244");
+  display.println("OVU00243&OVU00244");
   display.println("(End Stop&Continuous)");
   display.println("---------------------");
   display.println("Test starts soon.....");
@@ -96,7 +96,7 @@ void loop()
 
   if(flagPushButtonPushed_N == true)
   {
-    Motor.I2C_addr = 0x29;
+    Motor.I2C_addr = 0x28;
     Motor.begin();
     MotorInitial();
     Serial.printf("Moving to target location: %d\r\n", TargetLocation_1);
@@ -231,6 +231,8 @@ bool CheckProtection()
 {
   if(Motor.getTempProtection() == 0)
   {
+    display.println("Temp protection:error");
+    display.display();
     return false;
   }
   else
@@ -271,6 +273,8 @@ bool PowerOnSleep()
   if(Motor.getSleepOnPowerUpMode())
   {
     Serial.println("Sleeping error");
+    display.println("Sleepmode:error");
+    display.display();
     return false;
   }
   else
